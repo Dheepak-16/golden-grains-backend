@@ -10,6 +10,8 @@ const categorySchema = new mongoose.Schema({
   name: String,
   category: String,
   imageUrl: String,
+  riceVariety: String,
+  manufacturer: String,
   sizes: [sizeSchema]
 }, { _id: false });
 

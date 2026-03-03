@@ -2,12 +2,14 @@ const AllCategory = require("../model/allCategoryModel");
 
 exports.uploadAllCategory = async (req, res) => {
   try {
-    let { names, category, sizes } = req.body;
+    let { names, category, sizes, riceVariety, manufacturer } = req.body;
 
     // Force arrays
     if (!Array.isArray(names)) names = [names];
     if (!Array.isArray(category)) category = [category];
     if (!Array.isArray(sizes)) sizes = [sizes];
+    if (!Array.isArray(riceVariety)) riceVariety = [riceVariety];
+    if (!Array.isArray(manufacturer)) manufacturer = [manufacturer];
 
     // Parse sizes safely
     const parsedSizes = sizes.map(s => {
@@ -29,6 +31,8 @@ exports.uploadAllCategory = async (req, res) => {
       name: names[index],
       category: category[index],
       imageUrl: `/assets/${file.filename}`,
+      riceVariety: riceVariety[index],
+      manufacturer: manufacturer[index],
       sizes: parsedSizes[index] || []
     }));
 
@@ -67,13 +71,15 @@ exports.getAllCategory = async (req, res) => {
 
 exports.updateAllCategorySize = async (req, res) => {
   try {
-    const { name, newSizes } = req.body;
+    const { name, newSizes, riceVariety, manufacturer } = req.body;
 
     const data = await AllCategory.updateOne(
       { "categories.name": name },
       {
         $set: {
-          "categories.$.sizes": newSizes
+          ...(newSizes && { "categories.$.sizes": newSizes }),
+          ...(riceVariety && { "categories.$.riceVariety": riceVariety }),
+          ...(manufacturer && { "categories.$.manufacturer": manufacturer })
         }
       }
     );
