@@ -97,3 +97,29 @@ exports.updateAllCategorySize = async (req, res) => {
     });
   }
 };
+
+exports.getSingleProduct = async (req, res) => {
+  try {
+    const { name } = req.params;
+
+    const data = await AllCategory.findOne(
+      { "categories.name": name },
+      { "categories.$": 1 }
+    );
+
+    if (!data || !data.categories.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    res.json(data.categories[0]);
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
