@@ -57,17 +57,79 @@ const generateUserId = async () => {
     return lastUser ? lastUser.userId + 1 : 1;
 };
 
+// exports.logInUser = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         const reqUser = await userModel.findOne({ email })
+//         if (!reqUser) {
+//             return res.status(400).send({
+//                 success: false,
+//                 message: 'user not found'
+//             })
+//         }
+//         const check = await bcrypt.compare(password, reqUser.password)
+//         if (!check) {
+//             return res.status(400).send({
+//                 success: false,
+//                 message: "Invalid password"
+//             });
+//         }
+
+//         // return res.status(200).send({
+//         //     success: true,
+//         //     message: 'Login Successful'
+//         // })   
+
+//         const userData = await userModel
+//             .findById(reqUser._id)
+//         // .select('-password')
+
+//         const token = jwt.sign({
+//             id: userData._id,
+//             // name: userData.name,
+//             email: userData.email,
+//             // password: userData.password
+//         },
+//             process.env.jwt_SECRET,
+//             {
+//                 expiresIn: "7d"
+//             }
+//         )
+//         res.status(200).send({
+//             success: true,
+//             message: "Login Successful",
+//             token: token,
+//             user: {
+//                 id: userData.userId,
+//                 name: userData.name,
+//                 email: userData.email,
+//                 mobile: userData.mobileNumber
+//             }
+//         })
+
+//     } catch (error) {
+//         res.status(500).send({
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// }
+
 exports.logInUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const reqUser = await userModel.findOne({ email })
+
+        const reqUser = await userModel.findOne({ email });
+
         if (!reqUser) {
             return res.status(400).send({
                 success: false,
-                message: 'user not found'
-            })
+                message: "User not found"
+            });
         }
-        const check = await bcrypt.compare(password, reqUser.password)
+
+        const check = await bcrypt.compare(password, reqUser.password);
+
         if (!check) {
             return res.status(400).send({
                 success: false,
@@ -75,45 +137,36 @@ exports.logInUser = async (req, res) => {
             });
         }
 
-        // return res.status(200).send({
-        //     success: true,
-        //     message: 'Login Successful'
-        // })   
-
-        const userData = await userModel
-            .findById(reqUser._id)
-        // .select('-password')
-
-        const token = jwt.sign({
-            id: userData._id,
-            // name: userData.name,
-            email: userData.email,
-            // password: userData.password
-        },
-            process.env.jwt_SECRET,
+        const token = jwt.sign(
             {
-                expiresIn: "7d"
-            }
-        )
+                id: reqUser._id,
+                email: reqUser.email
+            },
+            process.env.jwt_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // ✅ FINAL CORRECT RESPONSE
         res.status(200).send({
             success: true,
             message: "Login Successful",
-            token: token,
+            token,
             user: {
-                id: userData.userId,
-                name: userData.name,
-                email: userData.email,
-                mobile: userData.mobileNumber
+                userId: reqUser.userId,           // 🔥 IMPORTANT
+                name: reqUser.name,
+                email: reqUser.email,
+                mobileNumber: reqUser.mobileNumber || "",
+                role: reqUser.role
             }
-        })
+        });
 
     } catch (error) {
         res.status(500).send({
             success: false,
             message: error.message
-        })
+        });
     }
-}
+};
 
 exports.googleSingUp = async (req, res) => {
     try {
@@ -135,6 +188,17 @@ exports.googleSingUp = async (req, res) => {
                 { expiresIn: "7d" }
             );
 
+            // return res.status(200).json({
+            //     success: true,
+            //     message: "Login Successful",
+            //     token,
+            //     user: {
+            //         userId: user.userId,
+            //         name: user.name,
+            //         email: user.email
+            //     }
+            // });
+
             return res.status(200).json({
                 success: true,
                 message: "Login Successful",
@@ -142,7 +206,9 @@ exports.googleSingUp = async (req, res) => {
                 user: {
                     userId: user.userId,
                     name: user.name,
-                    email: user.email
+                    email: user.email,
+                    mobileNumber: user.mobileNumber || "",   // ✅ FIX
+                    role: user.role 
                 }
             });
         }
@@ -227,7 +293,7 @@ exports.forgetPassword = async (req, res) => {
         <table style="background:#fff; padding:30px; border-radius:8px;">
           <tr>
             <td align="center">
-              <h2 style="color:#2575fc;">Golden Grains</h2>
+              <h2 style="color:#2575fc;">Sri Kariyakaliamma Rice Mundy</h2>
             </td>
           </tr>
 
@@ -250,7 +316,7 @@ exports.forgetPassword = async (req, res) => {
 
               <p>This OTP is valid for <strong>1 minute</strong>.</p>
 
-              <p>Regards,<br/><strong>Golden Grains Team</strong></p>
+              <p>Regards,<br/><strong>Sri Kariyakaliamma Rice Mundy</strong></p>
             </td>
           </tr>
 
@@ -280,7 +346,7 @@ exports.verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
-        console.log("Incoming:", email, otp);
+        // console.log("Incoming:", email, otp);
 
         if (!email || !otp) {
             return res.status(400).json({
@@ -298,7 +364,7 @@ exports.verifyOTP = async (req, res) => {
             });
         }
 
-        console.log("DB OTP:", user.resetOTP);
+        // console.log("DB OTP:", user.resetOTP);
 
         // FIXED comparison
         if (user.resetOTP?.toString().trim() !== otp.toString().trim()) {
@@ -372,6 +438,192 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
+exports.addAddress = async (req, res) => {
+    try {
+        const { userId, house, area, city, pincode } = req.body;
+
+        if (!userId || !house || !area || !city || !pincode) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields required"
+            });
+        }
+
+        const user = await userModel.findOne({ userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // ✅ ensure array exists
+        if (!user.addresses) {
+            user.addresses = [];
+        }
+
+        user.addresses.push({ house, area, city, pincode });
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Address added successfully",
+            addresses: user.addresses
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+exports.getAddress = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const user = await userModel.findOne({ userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            addresses: user.addresses || []
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+exports.updateAddress = async (req, res) => {
+    try {
+        const { userId, index, house, area, city, pincode } = req.body;
+
+        const user = await userModel.findOne({ userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (!user.addresses[index]) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid address index"
+            });
+        }
+
+        user.addresses[index] = { house, area, city, pincode };
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Address updated",
+            addresses: user.addresses
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+exports.deleteAddress = async (req, res) => {
+    try {
+        const { userId, index } = req.body;
+
+        const user = await userModel.findOne({ userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        user.addresses.splice(index, 1);
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Address deleted",
+            addresses: user.addresses
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+exports.placeOrder = async (req, res) => {
+    try {
+        const { userId, order } = req.body;
+
+        const user = await userModel.findOne({ userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!user.orders) {
+            user.orders = [];
+        }
+
+        user.orders.unshift(order); // latest first
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: "Order placed successfully",
+            orders: user.orders
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getOrders = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await userModel.findOne({ userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      orders: user.orders || []
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 
 

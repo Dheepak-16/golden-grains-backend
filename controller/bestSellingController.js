@@ -7,7 +7,7 @@ exports.uploadBestSelling = async (req, res) => {
       price: req.body.prices[index],
       mrp: req.body.mrps[index],
       imageUrl: `/assets/${file.filename}`
-    }));
+    }));z
 
     const data = await BestSelling.findOneAndUpdate(
       {},

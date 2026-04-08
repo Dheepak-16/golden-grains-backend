@@ -9,11 +9,8 @@ app.use("/api", require("./router/productRouter"));
 app.use("/api", require("./router/bestSellingRouter"));
 app.use("/api", require("./router/allCategoriesRouter"));
 app.use("/assets", express.static("assets"));
+const orderRouter = require("./router/orderRouter");
+app.use("/api/order", orderRouter);
+// app.use("/api", require(".router/orderRouter"))
 
-module.exports = app;   
-
-
-
-
-
-
+module.exports = app;  

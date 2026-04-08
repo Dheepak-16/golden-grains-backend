@@ -123,3 +123,53 @@ exports.getSingleProduct = async (req, res) => {
     });
   }
 };
+
+exports.deleteProduct = async (req, res) => {
+  try {
+
+    const { name } = req.body;
+
+    const data = await AllCategory.updateOne(
+      {},
+      {
+        $pull: {
+          categories: { name }
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Product deleted",
+      data
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  try {
+
+    const { name, updatedData } = req.body;
+
+    const data = await AllCategory.updateOne(
+      { "categories.name": name },
+      {
+        $set: {
+          "categories.$": updatedData
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Product updated",
+      data
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

@@ -19,6 +19,30 @@ const userSchema = new mongoose.Schema({
     otpExpiry: {
         type: Date,
         default: null
+    },
+
+    addresses: [
+        {
+            house: String,
+            area: String,
+            city: String,
+            pincode: String
+        }
+    ],
+
+    orders: [
+        {
+            orderId: Number,
+            date: String,
+            deliveryDate: String,
+            items: Array,
+            total: Number
+        }
+    ],
+
+    role: {
+        type: String,
+        default: "user"
     }
 
 })
